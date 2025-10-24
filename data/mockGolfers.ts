@@ -13,6 +13,8 @@ export const mockGolfers: Golfer[] = [
     location: 'San Francisco, CA',
     photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=600&fit=crop',
     interests: ['Early morning rounds', 'Coffee', 'Tournaments'],
+    playingStyle: 'Casual',
+    favoriteCourse: 'St Andrews',
   },
   {
     id: '2',
@@ -25,6 +27,8 @@ export const mockGolfers: Golfer[] = [
     location: 'Jacksonville, FL',
     photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=600&fit=crop',
     interests: ['Weekend golf', 'Practice sessions', 'Golf tech'],
+    playingStyle: 'Beginner-Friendly',
+    favoriteCourse: 'TPC Sawgrass',
   },
   {
     id: '3',
@@ -37,6 +41,8 @@ export const mockGolfers: Golfer[] = [
     location: 'Atlanta, GA',
     photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=600&fit=crop',
     interests: ['Competitive play', 'Golf fitness', 'Course strategy'],
+    playingStyle: 'Competitive',
+    favoriteCourse: 'Augusta National',
   },
   {
     id: '4',
@@ -49,6 +55,8 @@ export const mockGolfers: Golfer[] = [
     location: 'San Diego, CA',
     photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop',
     interests: ['Scenic courses', 'Golf travel', 'Equipment'],
+    playingStyle: 'Relaxed',
+    favoriteCourse: 'Pebble Beach',
   },
   {
     id: '5',
@@ -61,6 +69,8 @@ export const mockGolfers: Golfer[] = [
     location: 'Austin, TX',
     photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop',
     interests: ['Learning', 'Casual rounds', 'Golf lessons'],
+    playingStyle: 'Beginner-Friendly',
+    favoriteCourse: 'Pinehurst No. 2',
   },
   {
     id: '6',
@@ -73,6 +83,8 @@ export const mockGolfers: Golfer[] = [
     location: 'Charlotte, NC',
     photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=600&fit=crop',
     interests: ['Business golf', 'Country clubs', 'Golf events'],
+    playingStyle: 'Social',
+    favoriteCourse: 'Oakmont',
   },
   {
     id: '7',
@@ -85,6 +97,8 @@ export const mockGolfers: Golfer[] = [
     location: 'New York, NY',
     photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop',
     interests: ['Social golf', 'Golf trips', 'Post-round drinks'],
+    playingStyle: 'Social',
+    favoriteCourse: 'Bethpage Black',
   },
   {
     id: '8',
@@ -97,5 +111,7 @@ export const mockGolfers: Golfer[] = [
     location: 'Pittsburgh, PA',
     photo: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=600&fit=crop',
     interests: ['Competitive golf', 'Club championships', 'Golf instruction'],
+    playingStyle: 'Competitive',
+    favoriteCourse: 'Shinnecock Hills',
   },
 ];

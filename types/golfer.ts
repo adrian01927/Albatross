@@ -10,6 +10,8 @@ export interface Golfer {
   location: string;
   photo: string;
   interests: string[];
+  playingStyle?: string;
+  favoriteCourse?: string;
 }
 
 export interface Match {

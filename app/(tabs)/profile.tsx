@@ -16,6 +16,8 @@ import * as Haptics from 'expo-haptics';
 import { IconSymbol } from '@/components/IconSymbol';
 import { colors } from '@/styles/commonStyles';
 
+const PLAYING_STYLES = ['Competitive', 'Casual', 'Social', 'Beginner-Friendly', 'Serious', 'Relaxed'];
+
 export default function ProfileScreen() {
   const [name, setName] = useState('John Doe');
   const [age, setAge] = useState('28');
@@ -25,6 +27,8 @@ export default function ProfileScreen() {
   const [typicalCourse, setTypicalCourse] = useState('Pebble Beach');
   const [location, setLocation] = useState('San Francisco, CA');
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [playingStyle, setPlayingStyle] = useState('Casual');
+  const [favoriteCourse, setFavoriteCourse] = useState('Augusta National');
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -41,8 +45,23 @@ export default function ProfileScreen() {
   };
 
   const handleSave = () => {
-    console.log('Profile saved:', { name, age, bio, handicap, experience, typicalCourse, location });
+    console.log('Profile saved:', { 
+      name, 
+      age, 
+      bio, 
+      handicap, 
+      experience, 
+      typicalCourse, 
+      location,
+      playingStyle,
+      favoriteCourse
+    });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+
+  const handlePlayingStyleSelect = (style: string) => {
+    setPlayingStyle(style);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
   return (
@@ -150,12 +169,48 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.inputGroup}>
+            <Text style={styles.label}>Playing Style</Text>
+            <View style={styles.playingStyleContainer}>
+              {PLAYING_STYLES.map((style) => (
+                <Pressable
+                  key={style}
+                  style={[
+                    styles.playingStyleButton,
+                    playingStyle === style && styles.playingStyleButtonActive,
+                  ]}
+                  onPress={() => handlePlayingStyleSelect(style)}
+                >
+                  <Text
+                    style={[
+                      styles.playingStyleText,
+                      playingStyle === style && styles.playingStyleTextActive,
+                    ]}
+                  >
+                    {style}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
             <Text style={styles.label}>Typical Course</Text>
             <TextInput
               style={styles.input}
               value={typicalCourse}
               onChangeText={setTypicalCourse}
-              placeholder="Your favorite course"
+              placeholder="Where you usually play"
+              placeholderTextColor={colors.textSecondary}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Favorite Course</Text>
+            <TextInput
+              style={styles.input}
+              value={favoriteCourse}
+              onChangeText={setFavoriteCourse}
+              placeholder="Your dream course"
               placeholderTextColor={colors.textSecondary}
             />
           </View>
@@ -253,6 +308,31 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
     textAlignVertical: 'top',
+  },
+  playingStyleContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  playingStyleButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: colors.card,
+    borderWidth: 2,
+    borderColor: colors.secondary,
+  },
+  playingStyleButtonActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  playingStyleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  playingStyleTextActive: {
+    color: colors.card,
   },
   saveButton: {
     backgroundColor: colors.primary,

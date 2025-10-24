@@ -112,6 +112,13 @@ export default function SwipeCard({ golfer, onSwipeLeft, onSwipeRight, isTop }: 
 
           <Text style={styles.bio}>{golfer.bio}</Text>
 
+          {golfer.playingStyle && (
+            <View style={styles.playingStyleBadge}>
+              <IconSymbol name="person.fill" size={16} color={colors.primary} />
+              <Text style={styles.playingStyleText}>{golfer.playingStyle}</Text>
+            </View>
+          )}
+
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <IconSymbol name="flag.fill" size={20} color={colors.primary} />
@@ -127,8 +134,21 @@ export default function SwipeCard({ golfer, onSwipeLeft, onSwipeRight, isTop }: 
 
           <View style={styles.courseContainer}>
             <IconSymbol name="map.fill" size={18} color={colors.accent} />
-            <Text style={styles.courseText}>{golfer.typicalCourse}</Text>
+            <View style={styles.courseTextContainer}>
+              <Text style={styles.courseLabel}>Typical Course:</Text>
+              <Text style={styles.courseText}>{golfer.typicalCourse}</Text>
+            </View>
           </View>
+
+          {golfer.favoriteCourse && (
+            <View style={styles.courseContainer}>
+              <IconSymbol name="star.fill" size={18} color="#FFD700" />
+              <View style={styles.courseTextContainer}>
+                <Text style={styles.courseLabel}>Favorite Course:</Text>
+                <Text style={styles.courseText}>{golfer.favoriteCourse}</Text>
+              </View>
+            </View>
+          )}
 
           <View style={styles.interestsContainer}>
             {golfer.interests.map((interest, index) => (
@@ -156,7 +176,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: '50%',
+    height: '45%',
     backgroundColor: colors.secondary,
   },
   infoContainer: {
@@ -185,12 +205,28 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.text,
     lineHeight: 22,
-    marginBottom: 16,
+    marginBottom: 12,
+  },
+  playingStyleBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.highlight,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
+  },
+  playingStyleText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.primary,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 16,
+    marginBottom: 12,
     paddingVertical: 12,
     backgroundColor: colors.highlight,
     borderRadius: 12,
@@ -213,8 +249,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 12,
-    paddingVertical: 8,
+    marginBottom: 8,
+    paddingVertical: 6,
+  },
+  courseTextContainer: {
+    flex: 1,
+  },
+  courseLabel: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    fontWeight: '600',
+    marginBottom: 2,
   },
   courseText: {
     fontSize: 14,
@@ -225,6 +270,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    marginTop: 8,
   },
   interestTag: {
     backgroundColor: colors.secondary,

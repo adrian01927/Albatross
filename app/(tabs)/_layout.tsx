@@ -1,52 +1,69 @@
+
 import React from 'react';
-import { Platform } from 'react-native';
+import FloatingTabBar, { TabBarItem } from '@/components/FloatingTabBar';
 import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
 import { Stack } from 'expo-router';
-import FloatingTabBar, { TabBarItem } from '@/components/FloatingTabBar';
+import { Platform } from 'react-native';
+import { colors } from '@/styles/commonStyles';
 
 export default function TabLayout() {
-  // Define the tabs configuration
   const tabs: TabBarItem[] = [
     {
-      name: '(home)',
-      route: '/(tabs)/(home)/',
-      icon: 'house.fill',
-      label: 'Home',
+      route: '/(tabs)/(home)',
+      label: 'Discover',
+      icon: 'flame.fill',
+      color: colors.text,
     },
     {
-      name: 'profile',
+      route: '/(tabs)/matches',
+      label: 'Matches',
+      icon: 'heart.fill',
+      color: colors.text,
+    },
+    {
       route: '/(tabs)/profile',
-      icon: 'person.fill',
       label: 'Profile',
+      icon: 'person.fill',
+      color: colors.text,
     },
   ];
 
-  // Use NativeTabs for iOS, custom FloatingTabBar for Android and Web
   if (Platform.OS === 'ios') {
     return (
       <NativeTabs>
-        <NativeTabs.Trigger name="(home)">
-          <Icon sf="house.fill" drawable="ic_home" />
-          <Label>Home</Label>
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="profile">
-          <Icon sf="person.fill" drawable="ic_profile" />
-          <Label>Profile</Label>
-        </NativeTabs.Trigger>
+        <NativeTabs.Screen
+          name="(home)"
+          options={{
+            title: 'Discover',
+            tabBarIcon: ({ color }) => <Icon name="flame.fill" color={color} />,
+            tabBarLabel: ({ color }) => <Label color={color}>Discover</Label>,
+          }}
+        />
+        <NativeTabs.Screen
+          name="matches"
+          options={{
+            title: 'Matches',
+            tabBarIcon: ({ color }) => <Icon name="heart.fill" color={color} />,
+            tabBarLabel: ({ color }) => <Label color={color}>Matches</Label>,
+          }}
+        />
+        <NativeTabs.Screen
+          name="profile"
+          options={{
+            title: 'Profile',
+            tabBarIcon: ({ color }) => <Icon name="person.fill" color={color} />,
+            tabBarLabel: ({ color }) => <Label color={color}>Profile</Label>,
+          }}
+        />
       </NativeTabs>
     );
   }
 
-  // For Android and Web, use Stack navigation with custom floating tab bar
   return (
     <>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          animation: 'none', // Remove fade animation to prevent black screen flash
-        }}
-      >
+      <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(home)" />
+        <Stack.Screen name="matches" />
         <Stack.Screen name="profile" />
       </Stack>
       <FloatingTabBar tabs={tabs} />

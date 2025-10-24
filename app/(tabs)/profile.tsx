@@ -1,44 +1,169 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { IconSymbol } from "@/components/IconSymbol";
-import { GlassView } from "expo-glass-effect";
-import { useTheme } from "@react-navigation/native";
+
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Platform,
+  TextInput,
+  Pressable,
+  Image,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
+import * as Haptics from 'expo-haptics';
+import { IconSymbol } from '@/components/IconSymbol';
+import { colors } from '@/styles/commonStyles';
 
 export default function ProfileScreen() {
-  const theme = useTheme();
+  const [name, setName] = useState('John Doe');
+  const [age, setAge] = useState('28');
+  const [bio, setBio] = useState('Love playing early morning rounds!');
+  const [handicap, setHandicap] = useState('12');
+  const [experience, setExperience] = useState('5 years');
+  const [typicalCourse, setTypicalCourse] = useState('Pebble Beach');
+  const [location, setLocation] = useState('San Francisco, CA');
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setProfilePhoto(result.assets[0].uri);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  };
+
+  const handleSave = () => {
+    console.log('Profile saved:', { name, age, bio, handicap, experience, typicalCourse, location });
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={[
           styles.contentContainer,
-          Platform.OS !== 'ios' && styles.contentContainerWithTabBar
+          Platform.OS !== 'ios' && styles.contentContainerWithTabBar,
         ]}
       >
-        <GlassView style={[
-          styles.profileHeader,
-          Platform.OS !== 'ios' && { backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }
-        ]} glassEffectStyle="regular">
-          <IconSymbol name="person.circle.fill" size={80} color={theme.colors.primary} />
-          <Text style={[styles.name, { color: theme.colors.text }]}>John Doe</Text>
-          <Text style={[styles.email, { color: theme.dark ? '#98989D' : '#666' }]}>john.doe@example.com</Text>
-        </GlassView>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>My Golf Profile</Text>
+          <Text style={styles.headerSubtitle}>
+            Create your profile to find golf buddies
+          </Text>
+        </View>
 
-        <GlassView style={[
-          styles.section,
-          Platform.OS !== 'ios' && { backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }
-        ]} glassEffectStyle="regular">
-          <View style={styles.infoRow}>
-            <IconSymbol name="phone.fill" size={20} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>+1 (555) 123-4567</Text>
+        <Pressable style={styles.photoContainer} onPress={pickImage}>
+          {profilePhoto ? (
+            <Image source={{ uri: profilePhoto }} style={styles.profilePhoto} />
+          ) : (
+            <View style={styles.photoPlaceholder}>
+              <IconSymbol name="camera.fill" size={40} color={colors.textSecondary} />
+              <Text style={styles.photoPlaceholderText}>Add Photo</Text>
+            </View>
+          )}
+        </Pressable>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Basic Information</Text>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Your name"
+              placeholderTextColor={colors.textSecondary}
+            />
           </View>
-          <View style={styles.infoRow}>
-            <IconSymbol name="location.fill" size={20} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>San Francisco, CA</Text>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Age</Text>
+            <TextInput
+              style={styles.input}
+              value={age}
+              onChangeText={setAge}
+              placeholder="Your age"
+              keyboardType="numeric"
+              placeholderTextColor={colors.textSecondary}
+            />
           </View>
-        </GlassView>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Location</Text>
+            <TextInput
+              style={styles.input}
+              value={location}
+              onChangeText={setLocation}
+              placeholder="City, State"
+              placeholderTextColor={colors.textSecondary}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Bio</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={bio}
+              onChangeText={setBio}
+              placeholder="Tell others about yourself..."
+              multiline
+              numberOfLines={4}
+              placeholderTextColor={colors.textSecondary}
+            />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Golf Information</Text>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Handicap</Text>
+            <TextInput
+              style={styles.input}
+              value={handicap}
+              onChangeText={setHandicap}
+              placeholder="Your handicap"
+              keyboardType="numeric"
+              placeholderTextColor={colors.textSecondary}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Experience</Text>
+            <TextInput
+              style={styles.input}
+              value={experience}
+              onChangeText={setExperience}
+              placeholder="e.g., 5 years"
+              placeholderTextColor={colors.textSecondary}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Typical Course</Text>
+            <TextInput
+              style={styles.input}
+              value={typicalCourse}
+              onChangeText={setTypicalCourse}
+              placeholder="Your favorite course"
+              placeholderTextColor={colors.textSecondary}
+            />
+          </View>
+        </View>
+
+        <Pressable style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveButtonText}>Save Profile</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -47,7 +172,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    // backgroundColor handled dynamically
+    backgroundColor: colors.background,
   },
   container: {
     flex: 1,
@@ -56,36 +181,91 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   contentContainerWithTabBar: {
-    paddingBottom: 100, // Extra padding for floating tab bar
+    paddingBottom: 100,
   },
-  profileHeader: {
-    alignItems: 'center',
-    borderRadius: 12,
-    padding: 32,
-    marginBottom: 16,
-    gap: 12,
+  header: {
+    marginBottom: 24,
   },
-  name: {
-    fontSize: 24,
+  headerTitle: {
+    fontSize: 32,
     fontWeight: 'bold',
-    // color handled dynamically
+    color: colors.text,
+    marginBottom: 8,
   },
-  email: {
+  headerSubtitle: {
     fontSize: 16,
-    // color handled dynamically
+    color: colors.textSecondary,
+  },
+  photoContainer: {
+    alignSelf: 'center',
+    marginBottom: 32,
+  },
+  profilePhoto: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: colors.card,
+  },
+  photoPlaceholder: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: colors.card,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: colors.secondary,
+    borderStyle: 'dashed',
+  },
+  photoPlaceholderText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '600',
   },
   section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.primary,
+    marginBottom: 16,
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.secondary,
     borderRadius: 12,
-    padding: 20,
-    gap: 12,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  infoText: {
+    padding: 16,
     fontSize: 16,
-    // color handled dynamically
+    color: colors.text,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  saveButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    padding: 18,
+    alignItems: 'center',
+    marginBottom: 20,
+    boxShadow: '0px 4px 12px rgba(34, 139, 34, 0.3)',
+    elevation: 5,
+  },
+  saveButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.card,
   },
 });

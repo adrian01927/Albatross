@@ -1,104 +1,114 @@
-import React from "react";
-import { Stack, Link } from "expo-router";
-import { FlatList, Pressable, StyleSheet, View, Text, Alert, Platform } from "react-native";
-import { IconSymbol } from "@/components/IconSymbol";
-import { GlassView } from "expo-glass-effect";
-import { useTheme } from "@react-navigation/native";
 
-const ICON_COLOR = "#007AFF";
+import React, { useState } from 'react';
+import { View, StyleSheet, Pressable, Text, Platform } from 'react-native';
+import { Stack } from 'expo-router';
+import * as Haptics from 'expo-haptics';
+import { colors } from '@/styles/commonStyles';
+import { mockGolfers } from '@/data/mockGolfers';
+import { Golfer } from '@/types/golfer';
+import SwipeCard from '@/components/SwipeCard';
+import { IconSymbol } from '@/components/IconSymbol';
 
 export default function HomeScreen() {
-  const theme = useTheme();
-  const modalDemos = [
-    {
-      title: "Standard Modal",
-      description: "Full screen modal presentation",
-      route: "/modal",
-      color: "#007AFF",
-    },
-    {
-      title: "Form Sheet",
-      description: "Bottom sheet with detents and grabber",
-      route: "/formsheet",
-      color: "#34C759",
-    },
-    {
-      title: "Transparent Modal",
-      description: "Overlay without obscuring background",
-      route: "/transparent-modal",
-      color: "#FF9500",
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [matches, setMatches] = useState<Golfer[]>([]);
+
+  const handleSwipeLeft = () => {
+    console.log('Swiped left on:', mockGolfers[currentIndex].name);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCurrentIndex((prev) => prev + 1);
+  };
+
+  const handleSwipeRight = () => {
+    console.log('Swiped right on:', mockGolfers[currentIndex].name);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setMatches((prev) => [...prev, mockGolfers[currentIndex]]);
+    setCurrentIndex((prev) => prev + 1);
+  };
+
+  const handleLikePress = () => {
+    if (currentIndex < mockGolfers.length) {
+      handleSwipeRight();
     }
-  ];
+  };
 
-  const renderModalDemo = ({ item }: { item: (typeof modalDemos)[0] }) => (
-    <GlassView style={[
-      styles.demoCard,
-      Platform.OS !== 'ios' && { backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }
-    ]} glassEffectStyle="regular">
-      <View style={[styles.demoIcon, { backgroundColor: item.color }]}>
-        <IconSymbol name="square.grid.3x3" color="white" size={24} />
-      </View>
-      <View style={styles.demoContent}>
-        <Text style={[styles.demoTitle, { color: theme.colors.text }]}>{item.title}</Text>
-        <Text style={[styles.demoDescription, { color: theme.dark ? '#98989D' : '#666' }]}>{item.description}</Text>
-      </View>
-      <Link href={item.route as any} asChild>
-        <Pressable>
-          <GlassView style={[
-            styles.tryButton,
-            Platform.OS !== 'ios' && { backgroundColor: theme.dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)' }
-          ]} glassEffectStyle="clear">
-            <Text style={[styles.tryButtonText, { color: theme.colors.primary }]}>Try It</Text>
-          </GlassView>
-        </Pressable>
-      </Link>
-    </GlassView>
-  );
+  const handlePassPress = () => {
+    if (currentIndex < mockGolfers.length) {
+      handleSwipeLeft();
+    }
+  };
 
-  const renderHeaderRight = () => (
-    <Pressable
-      onPress={() => Alert.alert("Not Implemented", "This feature is not implemented yet")}
-      style={styles.headerButtonContainer}
-    >
-      <IconSymbol name="plus" color={theme.colors.primary} />
-    </Pressable>
-  );
+  const renderCards = () => {
+    if (currentIndex >= mockGolfers.length) {
+      return (
+        <View style={styles.emptyContainer}>
+          <IconSymbol name="flag.checkered" size={80} color={colors.primary} />
+          <Text style={styles.emptyTitle}>No More Golfers!</Text>
+          <Text style={styles.emptyText}>
+            You&apos;ve seen everyone in your area. Check back later for new golfers!
+          </Text>
+          <Text style={styles.matchCount}>
+            You made {matches.length} match{matches.length !== 1 ? 'es' : ''}!
+          </Text>
+        </View>
+      );
+    }
 
-  const renderHeaderLeft = () => (
-    <Pressable
-      onPress={() => Alert.alert("Not Implemented", "This feature is not implemented yet")}
-      style={styles.headerButtonContainer}
-    >
-      <IconSymbol
-        name="gear"
-        color={theme.colors.primary}
-      />
-    </Pressable>
-  );
+    return (
+      <>
+        {currentIndex + 1 < mockGolfers.length && (
+          <SwipeCard
+            golfer={mockGolfers[currentIndex + 1]}
+            onSwipeLeft={() => console.log('Next card')}
+            onSwipeRight={() => console.log('Next card')}
+            isTop={false}
+          />
+        )}
+        <SwipeCard
+          golfer={mockGolfers[currentIndex]}
+          onSwipeLeft={handleSwipeLeft}
+          onSwipeRight={handleSwipeRight}
+          isTop={true}
+        />
+      </>
+    );
+  };
 
   return (
     <>
       {Platform.OS === 'ios' && (
         <Stack.Screen
           options={{
-            title: "Building the app...",
-            headerRight: renderHeaderRight,
-            headerLeft: renderHeaderLeft,
+            title: 'Golf Buddies',
+            headerStyle: {
+              backgroundColor: colors.background,
+            },
+            headerTintColor: colors.primary,
           }}
         />
       )}
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-        <FlatList
-          data={modalDemos}
-          renderItem={renderModalDemo}
-          keyExtractor={(item) => item.route}
-          contentContainerStyle={[
-            styles.listContainer,
-            Platform.OS !== 'ios' && styles.listContainerWithTabBar
-          ]}
-          contentInsetAdjustmentBehavior="automatic"
-          showsVerticalScrollIndicator={false}
-        />
+      <View style={styles.container}>
+        <View style={styles.cardContainer}>
+          {renderCards()}
+        </View>
+
+        {currentIndex < mockGolfers.length && (
+          <View style={styles.buttonContainer}>
+            <Pressable
+              style={[styles.actionButton, styles.passButton]}
+              onPress={handlePassPress}
+            >
+              <IconSymbol name="xmark" size={32} color={colors.card} />
+            </Pressable>
+
+            <Pressable
+              style={[styles.actionButton, styles.likeButton]}
+              onPress={handleLikePress}
+            >
+              <IconSymbol name="heart.fill" size={32} color={colors.card} />
+            </Pressable>
+          </View>
+        )}
       </View>
     </>
   );
@@ -107,55 +117,59 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor handled dynamically
+    backgroundColor: colors.background,
   },
-  listContainer: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-  },
-  listContainerWithTabBar: {
-    paddingBottom: 100, // Extra padding for floating tab bar
-  },
-  demoCard: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  demoIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  cardContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    paddingTop: 20,
   },
-  demoContent: {
-    flex: 1,
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 40,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 100,
+    paddingHorizontal: 20,
   },
-  demoTitle: {
+  actionButton: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+    elevation: 5,
+  },
+  passButton: {
+    backgroundColor: '#FF3B30',
+  },
+  likeButton: {
+    backgroundColor: colors.primary,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40,
+  },
+  emptyTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginTop: 20,
+    marginBottom: 12,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 20,
+  },
+  matchCount: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 4,
-    // color handled dynamically
-  },
-  demoDescription: {
-    fontSize: 14,
-    lineHeight: 18,
-    // color handled dynamically
-  },
-  headerButtonContainer: {
-    padding: 6,
-  },
-  tryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  tryButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    // color handled dynamically
+    color: colors.primary,
   },
 });

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, Dimensions, Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -12,6 +12,8 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Golfer } from '@/types/golfer';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from './IconSymbol';
+import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
@@ -24,8 +26,16 @@ interface SwipeCardProps {
 }
 
 export default function SwipeCard({ golfer, onSwipeLeft, onSwipeRight, isTop }: SwipeCardProps) {
+  const router = useRouter();
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
+
+  const handleProfilePress = () => {
+    if (!isTop) return;
+    console.log('Opening profile for:', golfer.name);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push(`/(tabs)/(home)/profile/${golfer.id}`);
+  };
 
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
@@ -91,73 +101,72 @@ export default function SwipeCard({ golfer, onSwipeLeft, onSwipeRight, isTop }: 
   return (
     <GestureDetector gesture={panGesture}>
       <Animated.View style={[styles.card, cardStyle]}>
-        <Image source={{ uri: golfer.photo }} style={styles.image} />
-        
-        <Animated.View style={[styles.likeStamp, likeStyle]}>
-          <Text style={styles.likeText}>MATCH!</Text>
-        </Animated.View>
-        
-        <Animated.View style={[styles.nopeStamp, nopeStyle]}>
-          <Text style={styles.nopeText}>PASS</Text>
-        </Animated.View>
+        <Pressable onPress={handleProfilePress} style={styles.pressableContent}>
+          <Image source={{ uri: golfer.photo }} style={styles.image} />
+          
+          <Animated.View style={[styles.likeStamp, likeStyle]}>
+            <Text style={styles.likeText}>MATCH!</Text>
+          </Animated.View>
+          
+          <Animated.View style={[styles.nopeStamp, nopeStyle]}>
+            <Text style={styles.nopeText}>PASS</Text>
+          </Animated.View>
 
-        <View style={styles.infoContainer}>
-          <View style={styles.nameRow}>
-            <Text style={styles.name}>{golfer.name}, {golfer.age}</Text>
-            <View style={styles.locationRow}>
-              <IconSymbol name="location.fill" size={16} color={colors.textSecondary} />
-              <Text style={styles.location}>{golfer.location}</Text>
+          <View style={styles.infoContainer}>
+            <View style={styles.nameRow}>
+              <Text style={styles.name}>{golfer.name}, {golfer.age}</Text>
+              <View style={styles.locationRow}>
+                <IconSymbol name="location.fill" size={16} color={colors.textSecondary} />
+                <Text style={styles.location}>{golfer.location}</Text>
+              </View>
             </View>
-          </View>
 
-          <Text style={styles.bio}>{golfer.bio}</Text>
+            <Text style={styles.bio} numberOfLines={2}>{golfer.bio}</Text>
 
-          {golfer.playingStyle && (
-            <View style={styles.playingStyleBadge}>
-              <IconSymbol name="person.fill" size={16} color={colors.primary} />
-              <Text style={styles.playingStyleText}>{golfer.playingStyle}</Text>
+            {golfer.playingStyle && (
+              <View style={styles.playingStyleBadge}>
+                <IconSymbol name="person.fill" size={16} color={colors.primary} />
+                <Text style={styles.playingStyleText}>{golfer.playingStyle}</Text>
+              </View>
+            )}
+
+            <View style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <IconSymbol name="flag.fill" size={20} color={colors.primary} />
+                <Text style={styles.statLabel}>Handicap</Text>
+                <Text style={styles.statValue}>{golfer.handicap}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <IconSymbol name="clock.fill" size={20} color={colors.primary} />
+                <Text style={styles.statLabel}>Experience</Text>
+                <Text style={styles.statValue}>{golfer.experience}</Text>
+              </View>
             </View>
-          )}
 
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <IconSymbol name="flag.fill" size={20} color={colors.primary} />
-              <Text style={styles.statLabel}>Handicap</Text>
-              <Text style={styles.statValue}>{golfer.handicap}</Text>
-            </View>
-            <View style={styles.statItem}>
-              <IconSymbol name="clock.fill" size={20} color={colors.primary} />
-              <Text style={styles.statLabel}>Experience</Text>
-              <Text style={styles.statValue}>{golfer.experience}</Text>
-            </View>
-          </View>
-
-          <View style={styles.courseContainer}>
-            <IconSymbol name="map.fill" size={18} color={colors.accent} />
-            <View style={styles.courseTextContainer}>
-              <Text style={styles.courseLabel}>Typical Course:</Text>
-              <Text style={styles.courseText}>{golfer.typicalCourse}</Text>
-            </View>
-          </View>
-
-          {golfer.favoriteCourse && (
             <View style={styles.courseContainer}>
-              <IconSymbol name="star.fill" size={18} color="#FFD700" />
+              <IconSymbol name="map.fill" size={18} color={colors.accent} />
               <View style={styles.courseTextContainer}>
-                <Text style={styles.courseLabel}>Favorite Course:</Text>
-                <Text style={styles.courseText}>{golfer.favoriteCourse}</Text>
+                <Text style={styles.courseLabel}>Typical Course:</Text>
+                <Text style={styles.courseText} numberOfLines={1}>{golfer.typicalCourse}</Text>
               </View>
             </View>
-          )}
 
-          <View style={styles.interestsContainer}>
-            {golfer.interests.map((interest, index) => (
-              <View key={index} style={styles.interestTag}>
-                <Text style={styles.interestText}>{interest}</Text>
+            {golfer.favoriteCourse && (
+              <View style={styles.courseContainer}>
+                <IconSymbol name="star.fill" size={18} color="#FFD700" />
+                <View style={styles.courseTextContainer}>
+                  <Text style={styles.courseLabel}>Favorite Course:</Text>
+                  <Text style={styles.courseText} numberOfLines={1}>{golfer.favoriteCourse}</Text>
+                </View>
               </View>
-            ))}
+            )}
+
+            <View style={styles.tapHintContainer}>
+              <IconSymbol name="hand.tap.fill" size={16} color={colors.textSecondary} />
+              <Text style={styles.tapHint}>Tap to view full profile</Text>
+            </View>
           </View>
-        </View>
+        </Pressable>
       </Animated.View>
     </GestureDetector>
   );
@@ -173,6 +182,9 @@ const styles = StyleSheet.create({
     boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.15)',
     elevation: 5,
     overflow: 'hidden',
+  },
+  pressableContent: {
+    flex: 1,
   },
   image: {
     width: '100%',
@@ -266,22 +278,20 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontWeight: '500',
   },
-  interestsContainer: {
+  tapHintContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.secondary,
   },
-  interestTag: {
-    backgroundColor: colors.secondary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  interestText: {
+  tapHint: {
     fontSize: 12,
-    color: colors.text,
-    fontWeight: '500',
+    color: colors.textSecondary,
+    fontStyle: 'italic',
   },
   likeStamp: {
     position: 'absolute',

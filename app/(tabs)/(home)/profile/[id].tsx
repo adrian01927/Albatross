@@ -46,42 +46,62 @@ export default function GolferProfileScreen() {
         }}
       />
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        {/* Hero Image Section */}
         <View style={styles.imageContainer}>
           <Image source={{ uri: golfer.photo }} style={styles.profileImage} />
+          
+          {/* Gradient Overlay */}
+          <View style={styles.gradientOverlay} />
+          
+          {/* Back Button for Web */}
           {Platform.OS === 'web' && (
             <Pressable style={styles.webBackButton} onPress={handleBack}>
-              <IconSymbol name="chevron.left" size={24} color={colors.card} />
+              <IconSymbol name="chevron.left" size={24} color="#FFFFFF" />
             </Pressable>
           )}
+
+          {/* Handicap Badge */}
+          <View style={styles.handicapBadge}>
+            <IconSymbol name="trophy.fill" size={24} color={colors.primary} />
+            <View style={styles.handicapTextContainer}>
+              <Text style={styles.handicapLabel}>Handicap</Text>
+              <Text style={styles.handicapValue}>{golfer.handicap}</Text>
+            </View>
+          </View>
+
+          {/* Name and Location Overlay */}
+          <View style={styles.nameOverlay}>
+            <Text style={styles.nameText}>{golfer.name.toLowerCase()}</Text>
+            <View style={styles.locationRow}>
+              <IconSymbol name="location.fill" size={18} color="#FFFFFF" />
+              <Text style={styles.locationText}>{golfer.location}</Text>
+            </View>
+          </View>
         </View>
 
-        <View style={styles.headerSection}>
-          <View style={styles.nameContainer}>
-            <Text style={styles.name}>{golfer.name}</Text>
-            <Text style={styles.age}>{golfer.age} years old</Text>
-          </View>
-          
-          <View style={styles.locationContainer}>
-            <IconSymbol name="location.fill" size={20} color={colors.primary} />
-            <Text style={styles.location}>{golfer.location}</Text>
-          </View>
-        </View>
-
+        {/* Bio Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
-          <Text style={styles.bio}>{golfer.bio}</Text>
+          <Text style={styles.bioText}>{golfer.handicap} sigma</Text>
         </View>
 
+        {/* Playing Style Section */}
         {golfer.playingStyle && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Playing Style</Text>
-            <View style={styles.playingStyleCard}>
-              <IconSymbol name="person.fill" size={24} color={colors.primary} />
+            <View style={styles.playingStyleBadge}>
+              <IconSymbol name="star.fill" size={20} color="#FFD700" />
               <Text style={styles.playingStyleText}>{golfer.playingStyle}</Text>
             </View>
           </View>
         )}
 
+        {/* About Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>About</Text>
+          <Text style={styles.aboutText}>{golfer.bio}</Text>
+        </View>
+
+        {/* Golf Stats Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Golf Stats</Text>
           <View style={styles.statsGrid}>
@@ -98,6 +118,7 @@ export default function GolferProfileScreen() {
           </View>
         </View>
 
+        {/* Where They Play Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Where They Play</Text>
           
@@ -124,6 +145,7 @@ export default function GolferProfileScreen() {
           )}
         </View>
 
+        {/* Interests Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Interests</Text>
           <View style={styles.interestsContainer}>
@@ -151,13 +173,22 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: 400,
+    height: 500,
     position: 'relative',
   },
   profileImage: {
     width: '100%',
     height: '100%',
     backgroundColor: colors.secondary,
+  },
+  gradientOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '60%',
+    backgroundColor: 'transparent',
+    background: 'linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.7))',
   },
   webBackButton: {
     position: 'absolute',
@@ -166,68 +197,100 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'center',
     alignItems: 'center',
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.2)',
   },
-  headerSection: {
-    padding: 20,
-    backgroundColor: colors.card,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.secondary,
-  },
-  nameContainer: {
-    marginBottom: 12,
-  },
-  name: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 4,
-  },
-  age: {
-    fontSize: 18,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  locationContainer: {
+  handicapBadge: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+    elevation: 4,
   },
-  location: {
-    fontSize: 16,
+  handicapTextContainer: {
+    alignItems: 'flex-start',
+  },
+  handicapLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    textTransform: 'capitalize',
+  },
+  handicapValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
     color: colors.text,
+  },
+  nameOverlay: {
+    position: 'absolute',
+    bottom: 30,
+    left: 24,
+    right: 24,
+  },
+  nameText: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 8,
+    textShadow: '0px 2px 8px rgba(0, 0, 0, 0.4)',
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  locationText: {
+    fontSize: 18,
+    color: '#FFFFFF',
     fontWeight: '500',
+    textShadow: '0px 2px 8px rgba(0, 0, 0, 0.4)',
   },
   section: {
     padding: 20,
     backgroundColor: colors.card,
     marginTop: 12,
   },
+  bioText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    lineHeight: 24,
+  },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.text,
     marginBottom: 16,
   },
-  bio: {
+  playingStyleBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#FFF9E6',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#FFD700',
+  },
+  playingStyleText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  aboutText: {
     fontSize: 16,
     color: colors.text,
     lineHeight: 24,
-  },
-  playingStyleCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: colors.highlight,
-    padding: 16,
-    borderRadius: 12,
-  },
-  playingStyleText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.primary,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -237,12 +300,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.highlight,
     padding: 20,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     gap: 8,
   },
   statLabel: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textSecondary,
     fontWeight: '600',
   },
@@ -257,11 +320,13 @@ const styles = StyleSheet.create({
     gap: 16,
     backgroundColor: colors.highlight,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 12,
   },
   favoriteCard: {
     backgroundColor: '#FFF9E6',
+    borderWidth: 1,
+    borderColor: '#FFD700',
   },
   courseIconContainer: {
     width: 50,

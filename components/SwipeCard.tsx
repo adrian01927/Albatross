@@ -15,7 +15,7 @@ import { IconSymbol } from './IconSymbol';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
 
 interface SwipeCardProps {
@@ -102,8 +102,50 @@ export default function SwipeCard({ golfer, onSwipeLeft, onSwipeRight, isTop }: 
     <GestureDetector gesture={panGesture}>
       <Animated.View style={[styles.card, cardStyle]}>
         <Pressable onPress={handleProfilePress} style={styles.pressableContent}>
-          <Image source={{ uri: golfer.photo }} style={styles.image} />
-          
+          {/* Main Image with Overlay */}
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: golfer.photo }} style={styles.image} />
+            
+            {/* Gradient Overlay for better text readability */}
+            <View style={styles.gradientOverlay} />
+            
+            {/* Handicap Badge */}
+            <View style={styles.handicapBadge}>
+              <IconSymbol name="trophy.fill" size={20} color={colors.primary} />
+              <View style={styles.handicapTextContainer}>
+                <Text style={styles.handicapLabel}>Handicap</Text>
+                <Text style={styles.handicapValue}>{golfer.handicap}</Text>
+              </View>
+            </View>
+
+            {/* Name and Location Overlay */}
+            <View style={styles.nameOverlay}>
+              <Text style={styles.nameText}>{golfer.name.toLowerCase()}</Text>
+              <View style={styles.locationRow}>
+                <IconSymbol name="location.fill" size={16} color="#FFFFFF" />
+                <Text style={styles.locationText}>{golfer.location}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Info Section Below Image */}
+          <View style={styles.infoContainer}>
+            <Text style={styles.bioText} numberOfLines={2}>
+              {golfer.handicap} sigma
+            </Text>
+
+            {golfer.playingStyle && (
+              <View style={styles.playingStyleSection}>
+                <Text style={styles.sectionLabel}>Playing Style</Text>
+                <View style={styles.playingStyleBadge}>
+                  <IconSymbol name="star.fill" size={16} color="#FFD700" />
+                  <Text style={styles.playingStyleText}>{golfer.playingStyle}</Text>
+                </View>
+              </View>
+            )}
+          </View>
+
+          {/* Swipe Stamps */}
           <Animated.View style={[styles.likeStamp, likeStyle]}>
             <Text style={styles.likeText}>MATCH!</Text>
           </Animated.View>
@@ -111,61 +153,6 @@ export default function SwipeCard({ golfer, onSwipeLeft, onSwipeRight, isTop }: 
           <Animated.View style={[styles.nopeStamp, nopeStyle]}>
             <Text style={styles.nopeText}>PASS</Text>
           </Animated.View>
-
-          <View style={styles.infoContainer}>
-            <View style={styles.nameRow}>
-              <Text style={styles.name}>{golfer.name}, {golfer.age}</Text>
-              <View style={styles.locationRow}>
-                <IconSymbol name="location.fill" size={16} color={colors.textSecondary} />
-                <Text style={styles.location}>{golfer.location}</Text>
-              </View>
-            </View>
-
-            <Text style={styles.bio} numberOfLines={2}>{golfer.bio}</Text>
-
-            {golfer.playingStyle && (
-              <View style={styles.playingStyleBadge}>
-                <IconSymbol name="person.fill" size={16} color={colors.primary} />
-                <Text style={styles.playingStyleText}>{golfer.playingStyle}</Text>
-              </View>
-            )}
-
-            <View style={styles.statsContainer}>
-              <View style={styles.statItem}>
-                <IconSymbol name="flag.fill" size={20} color={colors.primary} />
-                <Text style={styles.statLabel}>Handicap</Text>
-                <Text style={styles.statValue}>{golfer.handicap}</Text>
-              </View>
-              <View style={styles.statItem}>
-                <IconSymbol name="clock.fill" size={20} color={colors.primary} />
-                <Text style={styles.statLabel}>Experience</Text>
-                <Text style={styles.statValue}>{golfer.experience}</Text>
-              </View>
-            </View>
-
-            <View style={styles.courseContainer}>
-              <IconSymbol name="map.fill" size={18} color={colors.accent} />
-              <View style={styles.courseTextContainer}>
-                <Text style={styles.courseLabel}>Typical Course:</Text>
-                <Text style={styles.courseText} numberOfLines={1}>{golfer.typicalCourse}</Text>
-              </View>
-            </View>
-
-            {golfer.favoriteCourse && (
-              <View style={styles.courseContainer}>
-                <IconSymbol name="star.fill" size={18} color="#FFD700" />
-                <View style={styles.courseTextContainer}>
-                  <Text style={styles.courseLabel}>Favorite Course:</Text>
-                  <Text style={styles.courseText} numberOfLines={1}>{golfer.favoriteCourse}</Text>
-                </View>
-              </View>
-            )}
-
-            <View style={styles.tapHintContainer}>
-              <IconSymbol name="hand.tap.fill" size={16} color={colors.textSecondary} />
-              <Text style={styles.tapHint}>Tap to view full profile</Text>
-            </View>
-          </View>
         </Pressable>
       </Animated.View>
     </GestureDetector>
@@ -176,153 +163,160 @@ const styles = StyleSheet.create({
   card: {
     position: 'absolute',
     width: SCREEN_WIDTH - 40,
-    height: '85%',
+    height: SCREEN_HEIGHT * 0.75,
     backgroundColor: colors.card,
-    borderRadius: 20,
-    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.15)',
-    elevation: 5,
+    borderRadius: 24,
+    boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.12)',
+    elevation: 8,
     overflow: 'hidden',
   },
   pressableContent: {
     flex: 1,
   },
+  imageContainer: {
+    width: '100%',
+    height: '75%',
+    position: 'relative',
+  },
   image: {
     width: '100%',
-    height: '45%',
+    height: '100%',
     backgroundColor: colors.secondary,
   },
-  infoContainer: {
-    padding: 20,
-    flex: 1,
+  gradientOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    backgroundColor: 'transparent',
+    background: 'linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.7))',
   },
-  nameRow: {
-    marginBottom: 12,
+  handicapBadge: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+    elevation: 4,
   },
-  name: {
-    fontSize: 28,
+  handicapTextContainer: {
+    alignItems: 'flex-start',
+  },
+  handicapLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    textTransform: 'capitalize',
+  },
+  handicapValue: {
+    fontSize: 20,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 4,
+  },
+  nameOverlay: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+  },
+  nameText: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 8,
+    textShadow: '0px 2px 8px rgba(0, 0, 0, 0.3)',
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
-  location: {
-    fontSize: 14,
+  locationText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '500',
+    textShadow: '0px 2px 8px rgba(0, 0, 0, 0.3)',
+  },
+  infoContainer: {
+    padding: 20,
+    flex: 1,
+    backgroundColor: colors.card,
+  },
+  bioText: {
+    fontSize: 16,
     color: colors.textSecondary,
+    lineHeight: 24,
+    marginBottom: 16,
   },
-  bio: {
-    fontSize: 15,
-    color: colors.text,
-    lineHeight: 22,
-    marginBottom: 12,
+  playingStyleSection: {
+    marginTop: 8,
+  },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: 8,
   },
   playingStyleBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: colors.highlight,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    gap: 8,
+    backgroundColor: '#FFF9E6',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
     alignSelf: 'flex-start',
-    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#FFD700',
   },
   playingStyleText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 12,
-    paddingVertical: 12,
-    backgroundColor: colors.highlight,
-    borderRadius: 12,
-  },
-  statItem: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    fontWeight: '600',
-  },
-  statValue: {
-    fontSize: 16,
-    color: colors.text,
-    fontWeight: 'bold',
-  },
-  courseContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-    paddingVertical: 6,
-  },
-  courseTextContainer: {
-    flex: 1,
-  },
-  courseLabel: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  courseText: {
     fontSize: 14,
+    fontWeight: '600',
     color: colors.text,
-    fontWeight: '500',
-  },
-  tapHintContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.secondary,
-  },
-  tapHint: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    fontStyle: 'italic',
   },
   likeStamp: {
     position: 'absolute',
-    top: 80,
+    top: 100,
     right: 30,
     backgroundColor: colors.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
     transform: [{ rotate: '15deg' }],
     zIndex: 10,
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+    elevation: 6,
   },
   likeText: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: colors.card,
+    color: '#FFFFFF',
+    letterSpacing: 2,
   },
   nopeStamp: {
     position: 'absolute',
-    top: 80,
+    top: 100,
     left: 30,
     backgroundColor: '#FF3B30',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
     transform: [{ rotate: '-15deg' }],
     zIndex: 10,
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+    elevation: 6,
   },
   nopeText: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: colors.card,
+    color: '#FFFFFF',
+    letterSpacing: 2,
   },
 });

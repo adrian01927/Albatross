@@ -9,28 +9,33 @@ import {
   TextInput,
   Pressable,
   Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { IconSymbol } from '@/components/IconSymbol';
 import { colors } from '@/styles/commonStyles';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'expo-router';
 
-const PLAYING_STYLES = ['Competitive', 'Casual', 'Social', 'Beginner-Friendly', 'Serious', 'Relaxed'];
+const PLAYING_STYLES = ['Competitive', 'Casual', 'Social', 'Beginner-Friendly', 'Relaxed'];
 
 export default function ProfileScreen() {
+  const { user, signOut } = useAuth();
+  const router = useRouter();
   const [name, setName] = useState('John Doe');
   const [age, setAge] = useState('28');
   const [bio, setBio] = useState('Love playing early morning rounds!');
   const [handicap, setHandicap] = useState('12');
   const [experience, setExperience] = useState('5 years');
-  const [typicalCourse, setTypicalCourse] = useState('Pebble Beach');
   const [location, setLocation] = useState('San Francisco, CA');
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [favoriteCourse, setFavoriteCourse] = useState('Pebble Beach');
   const [playingStyle, setPlayingStyle] = useState('Casual');
-  const [favoriteCourse, setFavoriteCourse] = useState('Augusta National');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   const pickImage = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
@@ -39,61 +44,64 @@ export default function ProfileScreen() {
     });
 
     if (!result.canceled) {
-      setProfilePhoto(result.assets[0].uri);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setProfileImage(result.assets[0].uri);
     }
   };
 
   const handleSave = () => {
-    console.log('Profile saved:', { 
-      name, 
-      age, 
-      bio, 
-      handicap, 
-      experience, 
-      typicalCourse, 
-      location,
-      playingStyle,
-      favoriteCourse
-    });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Alert.alert('Success', 'Profile updated successfully!');
   };
 
   const handlePlayingStyleSelect = (style: string) => {
-    setPlayingStyle(style);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setPlayingStyle(style);
+  };
+
+  const handleSignOut = async () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            await signOut();
+            router.replace('/auth/login');
+          },
+        },
+      ]
+    );
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={[
-          styles.contentContainer,
-          Platform.OS !== 'ios' && styles.contentContainerWithTabBar,
-        ]}
-      >
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>My Golf Profile</Text>
-          <Text style={styles.headerSubtitle}>
-            Create your profile to find golf buddies
-          </Text>
+          <Text style={styles.title}>My Profile</Text>
+          <Text style={styles.email}>{user?.email}</Text>
         </View>
 
-        <Pressable style={styles.photoContainer} onPress={pickImage}>
-          {profilePhoto ? (
-            <Image source={{ uri: profilePhoto }} style={styles.profilePhoto} />
+        <Pressable style={styles.imageContainer} onPress={pickImage}>
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={styles.profileImage} />
           ) : (
-            <View style={styles.photoPlaceholder}>
-              <IconSymbol name="camera.fill" size={40} color={colors.textSecondary} />
-              <Text style={styles.photoPlaceholderText}>Add Photo</Text>
+            <View style={styles.placeholderImage}>
+              <IconSymbol name="person.fill" size={60} color={colors.textSecondary} />
             </View>
           )}
+          <View style={styles.editBadge}>
+            <IconSymbol name="camera.fill" size={16} color={colors.card} />
+          </View>
         </Pressable>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Basic Information</Text>
-
+        <View style={styles.form}>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Name</Text>
             <TextInput
@@ -134,16 +142,12 @@ export default function ProfileScreen() {
               style={[styles.input, styles.textArea]}
               value={bio}
               onChangeText={setBio}
-              placeholder="Tell others about yourself..."
+              placeholder="Tell us about yourself"
               multiline
               numberOfLines={4}
               placeholderTextColor={colors.textSecondary}
             />
           </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Golf Information</Text>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Handicap</Text>
@@ -163,43 +167,7 @@ export default function ProfileScreen() {
               style={styles.input}
               value={experience}
               onChangeText={setExperience}
-              placeholder="e.g., 5 years"
-              placeholderTextColor={colors.textSecondary}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Playing Style</Text>
-            <View style={styles.playingStyleContainer}>
-              {PLAYING_STYLES.map((style) => (
-                <Pressable
-                  key={style}
-                  style={[
-                    styles.playingStyleButton,
-                    playingStyle === style && styles.playingStyleButtonActive,
-                  ]}
-                  onPress={() => handlePlayingStyleSelect(style)}
-                >
-                  <Text
-                    style={[
-                      styles.playingStyleText,
-                      playingStyle === style && styles.playingStyleTextActive,
-                    ]}
-                  >
-                    {style}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Typical Course</Text>
-            <TextInput
-              style={styles.input}
-              value={typicalCourse}
-              onChangeText={setTypicalCourse}
-              placeholder="Where you usually play"
+              placeholder="Years of experience"
               placeholderTextColor={colors.textSecondary}
             />
           </View>
@@ -210,85 +178,115 @@ export default function ProfileScreen() {
               style={styles.input}
               value={favoriteCourse}
               onChangeText={setFavoriteCourse}
-              placeholder="Your dream course"
+              placeholder="Your favorite golf course"
               placeholderTextColor={colors.textSecondary}
             />
           </View>
-        </View>
 
-        <Pressable style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save Profile</Text>
-        </Pressable>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Playing Style</Text>
+            <View style={styles.chipsContainer}>
+              {PLAYING_STYLES.map((style) => (
+                <Pressable
+                  key={style}
+                  style={[
+                    styles.chip,
+                    playingStyle === style && styles.chipSelected,
+                  ]}
+                  onPress={() => handlePlayingStyleSelect(style)}
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      playingStyle === style && styles.chipTextSelected,
+                    ]}
+                  >
+                    {style}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          <Pressable style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          </Pressable>
+
+          <Pressable style={styles.signOutButton} onPress={handleSignOut}>
+            <IconSymbol name="arrow.right.square" size={20} color="#FF3B30" />
+            <Text style={styles.signOutButtonText}>Sign Out</Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: colors.background,
   },
-  container: {
+  scrollView: {
     flex: 1,
   },
-  contentContainer: {
-    padding: 20,
-  },
-  contentContainerWithTabBar: {
-    paddingBottom: 100,
+  scrollContent: {
+    paddingBottom: Platform.OS === 'ios' ? 20 : 120,
   },
   header: {
-    marginBottom: 24,
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 10,
   },
-  headerTitle: {
-    fontSize: 32,
+  title: {
+    fontSize: 28,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 8,
+    marginBottom: 4,
   },
-  headerSubtitle: {
-    fontSize: 16,
+  email: {
+    fontSize: 14,
     color: colors.textSecondary,
   },
-  photoContainer: {
+  imageContainer: {
     alignSelf: 'center',
-    marginBottom: 32,
+    marginVertical: 20,
+    position: 'relative',
   },
-  profilePhoto: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     backgroundColor: colors.card,
   },
-  photoPlaceholder: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
+  placeholderImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
     borderColor: colors.secondary,
-    borderStyle: 'dashed',
   },
-  photoPlaceholderText: {
-    marginTop: 8,
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: '600',
+  editBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: colors.primary,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: colors.background,
   },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: 16,
+  form: {
+    paddingHorizontal: 20,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
     fontSize: 14,
@@ -301,7 +299,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.secondary,
     borderRadius: 12,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     fontSize: 16,
     color: colors.text,
   },
@@ -309,43 +308,59 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: 'top',
   },
-  playingStyleContainer: {
+  chipsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 8,
   },
-  playingStyleButton: {
+  chip: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: colors.card,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.secondary,
   },
-  playingStyleButtonActive: {
+  chipSelected: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
-  playingStyleText: {
+  chipText: {
     fontSize: 14,
-    fontWeight: '600',
     color: colors.text,
+    fontWeight: '500',
   },
-  playingStyleTextActive: {
+  chipTextSelected: {
     color: colors.card,
+    fontWeight: '600',
   },
   saveButton: {
     backgroundColor: colors.primary,
     borderRadius: 12,
-    padding: 18,
+    paddingVertical: 16,
     alignItems: 'center',
-    marginBottom: 20,
-    boxShadow: '0px 4px 12px rgba(34, 139, 34, 0.3)',
-    elevation: 5,
+    marginTop: 10,
+    marginBottom: 16,
   },
   saveButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '700',
     color: colors.card,
+  },
+  signOutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#FF3B30',
+    backgroundColor: 'transparent',
+  },
+  signOutButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FF3B30',
   },
 });

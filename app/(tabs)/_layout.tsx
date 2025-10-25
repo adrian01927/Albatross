@@ -1,62 +1,58 @@
 
-import React from 'react';
-import FloatingTabBar, { TabBarItem } from '@/components/FloatingTabBar';
-import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
-import { Stack } from 'expo-router';
+import React, { useEffect } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import FloatingTabBar from '@/components/FloatingTabBar';
+import { Stack, useRouter } from 'expo-router';
 import { Platform } from 'react-native';
 import { colors } from '@/styles/commonStyles';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface TabBarItem {
+  route: string;
+  label: string;
+  icon: string;
+  activeIcon?: string;
+}
 
 export default function TabLayout() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      console.log('No user found, redirecting to login');
+      router.replace('/auth/login');
+    }
+  }, [user, loading]);
+
   const tabs: TabBarItem[] = [
     {
       route: '/(tabs)/(home)',
       label: 'Discover',
       icon: 'flame.fill',
-      color: colors.text,
     },
     {
       route: '/(tabs)/matches',
       label: 'Matches',
       icon: 'heart.fill',
-      color: colors.text,
     },
     {
       route: '/(tabs)/profile',
       label: 'Profile',
       icon: 'person.fill',
-      color: colors.text,
     },
   ];
 
-  if (Platform.OS === 'ios') {
+  if (loading) {
     return (
-      <NativeTabs>
-        <NativeTabs.Screen
-          name="(home)"
-          options={{
-            title: 'Discover',
-            tabBarIcon: ({ color }) => <Icon name="flame.fill" color={color} />,
-            tabBarLabel: ({ color }) => <Label color={color}>Discover</Label>,
-          }}
-        />
-        <NativeTabs.Screen
-          name="matches"
-          options={{
-            title: 'Matches',
-            tabBarIcon: ({ color }) => <Icon name="heart.fill" color={color} />,
-            tabBarLabel: ({ color }) => <Label color={color}>Matches</Label>,
-          }}
-        />
-        <NativeTabs.Screen
-          name="profile"
-          options={{
-            title: 'Profile',
-            tabBarIcon: ({ color }) => <Icon name="person.fill" color={color} />,
-            tabBarLabel: ({ color }) => <Label color={color}>Profile</Label>,
-          }}
-        />
-      </NativeTabs>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (
@@ -66,7 +62,16 @@ export default function TabLayout() {
         <Stack.Screen name="matches" />
         <Stack.Screen name="profile" />
       </Stack>
-      <FloatingTabBar tabs={tabs} />
+      {Platform.OS !== 'ios' && <FloatingTabBar tabs={tabs} bottomMargin={30} />}
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+  },
+});

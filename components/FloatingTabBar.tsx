@@ -48,7 +48,7 @@ export default function FloatingTabBar({
 
   const activeIndex = tabs.findIndex((tab) => {
     if (tab.route === '/(tabs)/(home)') {
-      return pathname === '/(tabs)/(home)' || pathname === '/(tabs)/(home)/';
+      return pathname === '/(tabs)/(home)' || pathname === '/(tabs)/(home)/' || pathname.startsWith('/(tabs)/(home)/');
     }
     return pathname.startsWith(tab.route);
   });
@@ -88,7 +88,7 @@ export default function FloatingTabBar({
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <View style={[styles.container, { width: containerWidth, borderRadius, marginBottom: bottomMargin }]}>
-        {/* Background Indicator */}
+        {/* Background Indicator - Now uses primary green color */}
         <Animated.View
           style={[
             styles.indicator,
@@ -113,12 +113,12 @@ export default function FloatingTabBar({
                 <IconSymbol
                   name={iconName as any}
                   size={24}
-                  color={isActive ? colors.primary : colors.textSecondary}
+                  color={isActive ? colors.card : colors.textSecondary}
                 />
                 <Text
                   style={[
                     styles.label,
-                    { color: isActive ? colors.primary : colors.textSecondary },
+                    { color: isActive ? colors.card : colors.textSecondary },
                   ]}
                 >
                   {tab.label}
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   indicator: {
     position: 'absolute',
     height: '80%',
-    backgroundColor: colors.highlight,
+    backgroundColor: colors.primary,
     top: '10%',
     left: 8,
   },

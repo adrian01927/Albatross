@@ -98,14 +98,14 @@ export default function HomeScreen() {
               style={[styles.actionButton, styles.passButton]}
               onPress={handlePassPress}
             >
-              <IconSymbol name="xmark" size={32} color={colors.card} />
+              <IconSymbol name="xmark" size={28} color={colors.card} />
             </Pressable>
 
             <Pressable
               style={[styles.actionButton, styles.likeButton]}
               onPress={handleLikePress}
             >
-              <IconSymbol name="heart.fill" size={32} color={colors.card} />
+              <IconSymbol name="heart.fill" size={28} color={colors.card} />
             </Pressable>
           </View>
         )}
@@ -130,13 +130,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 40,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 100,
+    paddingBottom: Platform.OS === 'ios' ? 60 : 140,
     paddingHorizontal: 20,
   },
   actionButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
     boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',

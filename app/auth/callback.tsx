@@ -14,7 +14,7 @@ export default function AuthCallbackScreen() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   return (
     <View style={styles.container}>

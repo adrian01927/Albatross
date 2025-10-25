@@ -23,7 +23,7 @@ export default function TabLayout() {
       console.log('No user found, redirecting to login');
       router.replace('/auth/login');
     }
-  }, [user, loading]);
+  }, [user, loading, router]);
 
   const tabs: TabBarItem[] = [
     {

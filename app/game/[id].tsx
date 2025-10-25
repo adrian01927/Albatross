@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -61,18 +61,28 @@ export default function GameDetailScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const channelRef = useRef<any>(null);
 
-  useEffect(() => {
-    loadGameData();
-    setupRealtimeSubscription();
+  const loadMessages = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('game_id', id)
+        .order('created_at', { ascending: true });
 
-    return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
+      if (error) {
+        console.error('Error loading messages:', error);
+      } else {
+        setMessages(data || []);
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
       }
-    };
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    }
   }, [id]);
 
-  const loadGameData = async () => {
+  const loadGameData = useCallback(async () => {
     try {
       // Load game details
       const { data: gameData, error: gameError } = await supabase
@@ -113,30 +123,9 @@ export default function GameDetailScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, user?.id, router, loadMessages]);
 
-  const loadMessages = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('chat_messages')
-        .select('*')
-        .eq('game_id', id)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('Error loading messages:', error);
-      } else {
-        setMessages(data || []);
-        setTimeout(() => {
-          scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 100);
-      }
-    } catch (error) {
-      console.error('Error loading messages:', error);
-    }
-  };
-
-  const setupRealtimeSubscription = async () => {
+  const setupRealtimeSubscription = useCallback(async () => {
     if (!user) return;
 
     // Set auth for realtime
@@ -160,7 +149,18 @@ export default function GameDetailScreen() {
       .subscribe((status) => {
         console.log('Realtime subscription status:', status);
       });
-  };
+  }, [id, user]);
+
+  useEffect(() => {
+    loadGameData();
+    setupRealtimeSubscription();
+
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+      }
+    };
+  }, [loadGameData, setupRealtimeSubscription]);
 
   const handleSendMessage = async () => {
     if (!messageText.trim() || !isMember) return;

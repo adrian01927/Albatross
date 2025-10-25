@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Pressable,
   Image,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
@@ -18,21 +19,96 @@ import { IconSymbol } from '@/components/IconSymbol';
 import { colors } from '@/styles/commonStyles';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 
 const PLAYING_STYLES = ['Competitive', 'Casual', 'Social', 'Beginner-Friendly', 'Relaxed'];
+
+interface Profile {
+  id: string;
+  name: string | null;
+  age: number | null;
+  bio: string | null;
+  handicap: number | null;
+  experience: string | null;
+  location: string | null;
+  favorite_course: string | null;
+  playing_style: string | null;
+  profile_image_url: string | null;
+  email: string | null;
+}
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
-  const [name, setName] = useState('John Doe');
-  const [age, setAge] = useState('28');
-  const [bio, setBio] = useState('Love playing early morning rounds!');
-  const [handicap, setHandicap] = useState('12');
-  const [experience, setExperience] = useState('5 years');
-  const [location, setLocation] = useState('San Francisco, CA');
-  const [favoriteCourse, setFavoriteCourse] = useState('Pebble Beach');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [name, setName] = useState('');
+  const [age, setAge] = useState('');
+  const [bio, setBio] = useState('');
+  const [handicap, setHandicap] = useState('');
+  const [experience, setExperience] = useState('');
+  const [location, setLocation] = useState('');
+  const [favoriteCourse, setFavoriteCourse] = useState('');
   const [playingStyle, setPlayingStyle] = useState('Casual');
   const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      loadProfile();
+    }
+  }, [user]);
+
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) {
+        console.error('Error loading profile:', error);
+        if (error.code === 'PGRST116') {
+          // Profile doesn't exist, create it
+          await createProfile();
+        }
+      } else if (data) {
+        setName(data.name || '');
+        setAge(data.age?.toString() || '');
+        setBio(data.bio || '');
+        setHandicap(data.handicap?.toString() || '');
+        setExperience(data.experience || '');
+        setLocation(data.location || '');
+        setFavoriteCourse(data.favorite_course || '');
+        setPlayingStyle(data.playing_style || 'Casual');
+        setProfileImage(data.profile_image_url);
+      }
+    } catch (error) {
+      console.error('Error in loadProfile:', error);
+      Alert.alert('Error', 'Failed to load profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createProfile = async () => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .insert({
+          id: user?.id,
+          email: user?.email,
+          name: user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
+        });
+
+      if (error) {
+        console.error('Error creating profile:', error);
+      }
+    } catch (error) {
+      console.error('Error in createProfile:', error);
+    }
+  };
 
   const pickImage = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -48,9 +124,42 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSave = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Alert.alert('Success', 'Profile updated successfully!');
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      const updates = {
+        id: user?.id,
+        name: name || null,
+        age: age ? parseInt(age) : null,
+        bio: bio || null,
+        handicap: handicap ? parseInt(handicap) : null,
+        experience: experience || null,
+        location: location || null,
+        favorite_course: favoriteCourse || null,
+        playing_style: playingStyle || null,
+        profile_image_url: profileImage || null,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from('profiles')
+        .upsert(updates);
+
+      if (error) {
+        console.error('Error saving profile:', error);
+        Alert.alert('Error', 'Failed to save profile: ' + error.message);
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Success', 'Profile updated successfully!');
+      }
+    } catch (error) {
+      console.error('Error in handleSave:', error);
+      Alert.alert('Error', 'An unexpected error occurred');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handlePlayingStyleSelect = (style: string) => {
@@ -79,6 +188,17 @@ export default function ProfileScreen() {
       ]
     );
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading profile...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -208,8 +328,16 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          <Pressable style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>Save Changes</Text>
+          <Pressable 
+            style={[styles.saveButton, saving && styles.buttonDisabled]} 
+            onPress={handleSave}
+            disabled={saving}
+          >
+            {saving ? (
+              <ActivityIndicator color={colors.card} />
+            ) : (
+              <Text style={styles.saveButtonText}>Save Changes</Text>
+            )}
           </Pressable>
 
           <Pressable style={styles.signOutButton} onPress={handleSignOut}>
@@ -226,6 +354,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: colors.textSecondary,
   },
   scrollView: {
     flex: 1,
@@ -341,6 +479,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
     marginBottom: 16,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   saveButtonText: {
     fontSize: 16,

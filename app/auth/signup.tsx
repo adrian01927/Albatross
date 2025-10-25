@@ -45,7 +45,7 @@ export default function SignUpScreen() {
     setLoading(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    const { error } = await signUp(email, password);
+    const { data, error } = await signUp(email, password);
 
     setLoading(false);
 
@@ -54,16 +54,32 @@ export default function SignUpScreen() {
       Alert.alert('Sign Up Failed', error.message || 'An error occurred during sign up');
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert(
-        'Success!',
-        'Account created successfully! Please check your email to verify your account before logging in.',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.replace('/auth/login'),
-          },
-        ]
-      );
+      
+      // Check if email confirmation is required
+      if (data?.user && !data?.session) {
+        Alert.alert(
+          'Verify Your Email',
+          'We&apos;ve sent a verification email to ' + email + '. Please check your inbox and click the verification link to activate your account.',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/auth/login'),
+            },
+          ]
+        );
+      } else if (data?.session) {
+        // User is automatically logged in (email confirmation disabled)
+        Alert.alert(
+          'Success!',
+          'Account created successfully!',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/(tabs)/(home)'),
+            },
+          ]
+        );
+      }
     }
   };
 

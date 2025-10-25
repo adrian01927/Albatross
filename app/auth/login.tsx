@@ -34,13 +34,23 @@ export default function LoginScreen() {
     setLoading(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    const { error } = await signIn(email, password);
+    const { data, error } = await signIn(email, password);
 
     setLoading(false);
 
     if (error) {
       console.log('Login error:', error);
-      Alert.alert('Login Failed', error.message || 'An error occurred during login');
+      
+      // Show specific error messages
+      let errorMessage = error.message || 'An error occurred during login';
+      
+      if (error.message?.includes('Email not confirmed')) {
+        errorMessage = 'Please verify your email address before logging in. Check your inbox for the verification link.';
+      } else if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password. Please try again.';
+      }
+      
+      Alert.alert('Login Failed', errorMessage);
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace('/(tabs)/(home)');

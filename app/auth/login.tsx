@@ -23,7 +23,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle, signInWithApple } = useAuth();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -41,6 +41,40 @@ export default function LoginScreen() {
     if (error) {
       console.log('Login error:', error);
       Alert.alert('Login Failed', error.message || 'An error occurred during login');
+    } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.replace('/(tabs)/(home)');
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    const { error } = await signInWithGoogle();
+
+    setLoading(false);
+
+    if (error) {
+      console.log('Google sign in error:', error);
+      Alert.alert('Sign In Failed', error.message || 'An error occurred during Google sign in');
+    } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.replace('/(tabs)/(home)');
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    const { error } = await signInWithApple();
+
+    setLoading(false);
+
+    if (error) {
+      console.log('Apple sign in error:', error);
+      Alert.alert('Sign In Failed', error.message || 'An error occurred during Apple sign in');
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace('/(tabs)/(home)');
@@ -69,6 +103,32 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.form}>
+            <View style={styles.oauthButtons}>
+              <Pressable
+                style={[styles.oauthButton, styles.googleButton]}
+                onPress={handleGoogleSignIn}
+                disabled={loading}
+              >
+                <IconSymbol name="globe" size={20} color="#fff" />
+                <Text style={styles.oauthButtonText}>Continue with Google</Text>
+              </Pressable>
+
+              <Pressable
+                style={[styles.oauthButton, styles.appleButton]}
+                onPress={handleAppleSignIn}
+                disabled={loading}
+              >
+                <IconSymbol name="apple.logo" size={20} color="#fff" />
+                <Text style={styles.oauthButtonText}>Continue with Apple</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Email</Text>
               <TextInput
@@ -159,6 +219,29 @@ const styles = StyleSheet.create({
   },
   form: {
     width: '100%',
+  },
+  oauthButtons: {
+    gap: 12,
+    marginBottom: 24,
+  },
+  oauthButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    paddingVertical: 14,
+    gap: 12,
+  },
+  googleButton: {
+    backgroundColor: '#4285F4',
+  },
+  appleButton: {
+    backgroundColor: '#000',
+  },
+  oauthButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
   inputContainer: {
     marginBottom: 20,

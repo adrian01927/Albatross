@@ -37,6 +37,11 @@ export default function TabLayout() {
       icon: 'heart.fill',
     },
     {
+      route: '/(tabs)/find-a-game',
+      label: 'Find Game',
+      icon: 'magnifyingglass',
+    },
+    {
       route: '/(tabs)/profile',
       label: 'Profile',
       icon: 'person.fill',
@@ -60,6 +65,7 @@ export default function TabLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(home)" />
         <Stack.Screen name="matches" />
+        <Stack.Screen name="find-a-game" />
         <Stack.Screen name="profile" />
       </Stack>
       {Platform.OS !== 'ios' && <FloatingTabBar tabs={tabs} bottomMargin={30} />}
